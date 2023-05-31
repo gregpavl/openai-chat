@@ -50,6 +50,7 @@ type options struct {
 	apiKey           string
 	model            string
 	prompt           string
+	promptFile       string
 	maxTokens        int
 	temperature      float64
 	frequencyPenalty float64
@@ -63,6 +64,7 @@ func gatherOptions() options {
 	fs.StringVar(&o.apiKey, "apiKey", "", "OpenAI API key")
 	fs.StringVar(&o.model, "model", "gpt-3.5-turbo", "OpenAI model ID")
 	fs.StringVar(&o.prompt, "prompt", "Write me a 100 word paragraph, use h1 and h2 and bold. reply in markdown format", "Text prompt to generate a response to")
+	fs.StringVar(&o.promptFile, "promptFile", "File", "Text prompt to generate a response to")
 	fs.IntVar(&o.maxTokens, "maxTokens", 50, "Maximum number of tokens to generate in the response")
 	fs.Float64Var(&o.temperature, "temperature", 0.5, "Sampling temperature for the model")
 	fs.Float64Var(&o.frequencyPenalty, "frequencyPenalty", 0.5, "Frequency penalty for the model")
@@ -74,12 +76,35 @@ func gatherOptions() options {
 	return o
 }
 
+func validateOptions(o options) error {
+	if len(o.apiKey) == 0 {
+		return fmt.Errorf("--apiKey was not provided")
+	}
+
+	return nil
+}
+
 func main() {
 	o := gatherOptions()
 
+	if err := validateOptions(o); err != nil {
+		logrus.WithError(err).Fatalf("argument error: %v", err)
+	}
+
+	prompt := ""
+	if o.promptFile != "" {
+		data, err := ioutil.ReadFile(o.promptFile)
+		if err != nil {
+			logrus.WithError(err).Fatalf("Failed to read prompt file: %v", err)
+		}
+		prompt = string(data)
+	} else {
+		prompt = o.prompt
+	}
+
 	reqData := Request{
 		Model:            o.model,
-		Messages:         []map[string]string{{"role": "user", "content": o.prompt}},
+		Messages:         []map[string]string{{"role": "user", "content": prompt}},
 		MaxTokens:        o.maxTokens,
 		Temperature:      float32(o.temperature),
 		FrequencyPenalty: float32(o.frequencyPenalty),

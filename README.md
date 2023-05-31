@@ -31,6 +31,7 @@ You can also customize the behavior of the chatbot by passing additional options
 
 - `-model` : the OpenAI model ID to use (default: "gpt-3.5-turbo")
 - `-prompt` : the text prompt to generate a response to (default: "Write me a 100 word paragraph, use h1 and h2 and bold. reply in markdown format")
+- `-promptFile` : the file which contains the prompt (big prompts)
 - `-maxTokens` : the maximum number of tokens to generate in the response (default: 50)
 - `-temperature` : the sampling temperature for the model (default: 0.5)
 - `-frequencyPenalty` : the frequency penalty for the model (default: 0.5)
